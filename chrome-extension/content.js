@@ -7,39 +7,22 @@
     let url;
     try { url = new URL(img.currentSrc || img.src); } catch { return false; }
     const host = url.hostname.toLowerCase();
-    // Restrict to OpenAI-hosted image assets to avoid archiving unrelated page imagery.
     return host === "oaiusercontent.com" || host.endsWith(".oaiusercontent.com") ||
       host === "openai.com" || host.endsWith(".openai.com");
   }
 
-  async function archive(img) {
+  function archive(img) {
     const source = img.currentSrc || img.src;
     if (seen.has(source) || !candidateImage(img)) return;
     seen.add(source);
-
-    const settings = await chrome.storage.local.get(["endpoint", "key"]);
-    if (!settings.endpoint || !settings.key) return;
-
-    try {
-      const response = await fetch(source, { credentials: "include" });
-      if (!response.ok) throw new Error("Could not fetch image source");
-      const blob = await response.blob();
-      if (!blob.type.startsWith("image/")) return;
-      const form = new FormData();
-      form.append("image", blob, "chatgpt-image." + (blob.type.split("/")[1] || "png"));
-      form.append("source", "chatgpt.com");
-
-      const result = await fetch(settings.endpoint, {
-        method: "POST",
-        headers: { "x-capture-key": settings.key },
-        body: form
-      });
-      if (!result.ok) throw new Error("Archive endpoint returned " + result.status);
-      console.info("[Image Archive] Saved generated image.");
-    } catch (error) {
-      console.warn("[Image Archive] Capture failed:", error.message);
-      seen.delete(source);
-    }
+    chrome.runtime.sendMessage({ type: "ARCHIVE_IMAGE", imageUrl: source }, (result) => {
+      if (chrome.runtime.lastError || !result?.ok) {
+        console.warn("[Image Archive] Capture failed:", result?.error || chrome.runtime.lastError?.message);
+        seen.delete(source);
+      } else {
+        console.info("[Image Archive] Saved generated image.");
+      }
+    });
   }
 
   function scan(root = document) {
