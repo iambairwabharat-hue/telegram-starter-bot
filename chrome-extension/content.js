@@ -1,4 +1,5 @@
 (() => {
+  console.info("[Image Archive] Content script active on", location.href);
   const seen = new Set();
   const MIN_DIMENSION = 300;
 
@@ -7,20 +8,23 @@
     let url;
     try { url = new URL(img.currentSrc || img.src); } catch { return false; }
     const host = url.hostname.toLowerCase();
-    return host === "oaiusercontent.com" || host.endsWith(".oaiusercontent.com") ||
+    const allowed = host === "oaiusercontent.com" || host.endsWith(".oaiusercontent.com") ||
       host === "openai.com" || host.endsWith(".openai.com");
+    if (allowed) console.info("[Image Archive] Candidate image detected:", host, img.naturalWidth + "x" + img.naturalHeight);
+    return allowed;
   }
 
   function archive(img) {
     const source = img.currentSrc || img.src;
     if (seen.has(source) || !candidateImage(img)) return;
     seen.add(source);
+    console.info("[Image Archive] Sending image to extension service worker…");
     chrome.runtime.sendMessage({ type: "ARCHIVE_IMAGE", imageUrl: source }, (result) => {
       if (chrome.runtime.lastError || !result?.ok) {
         console.warn("[Image Archive] Capture failed:", result?.error || chrome.runtime.lastError?.message);
         seen.delete(source);
       } else {
-        console.info("[Image Archive] Saved generated image.");
+        console.info("[Image Archive] Archived successfully:", result.result);
       }
     });
   }
