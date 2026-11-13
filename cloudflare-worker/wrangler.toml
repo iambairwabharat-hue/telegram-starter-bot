@@ -1,0 +1,3 @@
+name = "chatgpt-image-capture-api"
+main = "worker.js"
+compatibility_date = "2026-11-13"
