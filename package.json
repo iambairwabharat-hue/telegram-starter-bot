@@ -1,3 +1,4 @@
+
 {
   "name": "fadehost-telegram-starter-bot",
   "version": "1.0.0",
@@ -11,6 +12,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
     "grammy": "^1.30.0"
   },
   "license": "MIT"
