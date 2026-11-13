@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChatGPT Image Archive</title>
+  <style>
+    body { font: 14px Arial, sans-serif; width: 300px; padding: 14px; color: #202124; }
+    h3 { margin: 0 0 12px; }
+    label { display: block; margin: 10px 0 5px; font-weight: 600; }
+    input { box-sizing: border-box; width: 100%; padding: 8px; }
+    button { margin-top: 12px; width: 100%; padding: 9px; cursor: pointer; }
+    #status { margin-top: 10px; overflow-wrap: anywhere; }
+    .note { color: #666; font-size: 12px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <h3>Image Archive</h3>
+  <label for="endpoint">Archive API URL</label>
+  <input id="endpoint" placeholder="https://your-app.fadehost.app/capture">
+  <label for="key">Capture API key</label>
+  <input id="key" type="password" placeholder="Your API key">
+  <button id="save">Save settings</button>
+  <div id="status"></div>
+  <p class="note">Keep your API key private. Images are detected on ChatGPT pages and sent to your configured archive endpoint.</p>
+  <script src="popup.js"></script>
+</body>
+</html>
