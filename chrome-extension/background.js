@@ -1,11 +1,12 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type !== "ARCHIVE_IMAGE" || !message.imageUrl) return;
+  if (message?.type !== "ARCHIVE_IMAGE" || (!message.imageUrl && !message.imageData)) return;
   (async () => {
     const settings = await chrome.storage.local.get(["endpoint", "key"]);
-    if (!settings.endpoint || !settings.key) throw new Error("Set API endpoint and key in the extension popup first.");
+    if (!settings.endpoint || !settings.key) throw new Error("Archive settings are missing.");
 
-    const response = await fetch(message.imageUrl);
-    if (!response.ok) throw new Error("Could not fetch image from ChatGPT");
+    const source = message.imageData || message.imageUrl;
+    const response = await fetch(source);
+    if (!response.ok) throw new Error("Could not read image data");
     const blob = await response.blob();
     if (!blob.type.startsWith("image/")) throw new Error("Source is not an image");
 
