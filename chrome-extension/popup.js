@@ -1,28 +1,26 @@
-const endpoint = document.getElementById("endpoint");
-const key = document.getElementById("key");
+const DEFAULT_ENDPOINT = "https://bot-bharatgptimagebot.fadehost.app/capture";
+const DEFAULT_KEY = "MT-TEST-ARCHIVE-2026-7xQ9pL2v";
+
+const endpointInput = document.getElementById("endpoint");
+const keyInput = document.getElementById("key");
 const status = document.getElementById("status");
 
+// Seed defaults on first install, then use saved values.
 chrome.storage.local.get(["endpoint", "key"], (settings) => {
-  endpoint.value = settings.endpoint || "";
-  key.value = settings.key || "";
+  const endpoint = settings.endpoint || DEFAULT_ENDPOINT;
+  const key = settings.key || DEFAULT_KEY;
+  endpointInput.value = endpoint;
+  keyInput.value = key;
+  if (!settings.endpoint || !settings.key) {
+    chrome.storage.local.set({ endpoint, key });
+  }
 });
 
-document.getElementById("save").addEventListener("click", async () => {
-  const apiUrl = endpoint.value.trim();
-  const apiKey = key.value.trim();
+document.getElementById("save").addEventListener("click", () => {
+  const apiUrl = endpointInput.value.trim();
+  const apiKey = keyInput.value.trim();
   if (!apiUrl.startsWith("https://") || !apiUrl.endsWith("/capture") || !apiKey) {
-    status.textContent = "Enter an HTTPS endpoint ending in /capture and an API key.";
-    return;
-  }
-
-  let origin;
-  try { origin = new URL(apiUrl).origin; } catch {
-    status.textContent = "Endpoint URL is invalid.";
-    return;
-  }
-  const granted = await chrome.permissions.request({ origins: [origin + "/*"] });
-  if (!granted) {
-    status.textContent = "Permission to connect to the archive server was not granted.";
+    status.textContent = "Endpoint must be HTTPS and end in /capture; API key is required.";
     return;
   }
   chrome.storage.local.set({ endpoint: apiUrl, key: apiKey }, () => {
