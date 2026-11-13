@@ -11,6 +11,7 @@
 import http from "node:http"
 import { Bot, webhookCallback } from "grammy"
 import { registerCommands } from "./src/commands.js"
+import { startCaptureServer } from "./capture-server.js"
 
 const token = process.env.TELEGRAM_BOT_TOKEN
 if (!token) {
@@ -46,7 +47,7 @@ async function main() {
     explain(err)
     process.exit(1)
   }
-  console.log(`[bot] logged in as @${me.username} (${mode} mode)`)
+  console.log(`[bot] logged in as @${me.username} (${mode} mode)`)\n\n  if (mode === "polling") startCaptureServer(bot)
 
   if (mode === "webhook") {
     const url = (process.env.WEBHOOK_URL || "").trim().replace(/\/$/, "")
