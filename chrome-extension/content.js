@@ -26,6 +26,7 @@
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas context unavailable");
         ctx.drawImage(img, 0, 0);
         resolve(canvas.toDataURL("image/png"));
       } catch (error) { reject(error); }
@@ -56,7 +57,12 @@
     if (root instanceof HTMLImageElement) archive(root);
     root.querySelectorAll?.("img").forEach(archive);
   }
+
   scan();
+  document.addEventListener("load", (event) => {
+    if (event.target instanceof HTMLImageElement) archive(event.target);
+  }, true);
+
   const observer = new MutationObserver((records) => {
     for (const record of records) {
       record.addedNodes.forEach((node) => { if (node.nodeType === Node.ELEMENT_NODE) scan(node); });
@@ -64,4 +70,8 @@
     }
   });
   observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["src", "srcset"] });
+
+  // ChatGPT sometimes loads generated-image blobs after the initial DOM mutations.
+  // Periodic scanning catches those late-loaded images; seen prevents duplicate uploads.
+  setInterval(() => scan(), 2500);
 })();
